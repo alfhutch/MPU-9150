@@ -24,8 +24,7 @@
  We have disabled the internal pull-ups used by the Wire library in the Wire.h/twi.c utility file.
  We are also using the 400 kHz fast I2C mode by setting the TWI_FREQ  to 400000L /twi.h utility file.
  */
-#include "Wire.h" 
-/*afh
+#include "Wire.h"  
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
 
@@ -36,7 +35,7 @@
 // pin 5 - LCD chip select (CS)
 // pin 6 - LCD reset (RST)
 Adafruit_PCD8544 display = Adafruit_PCD8544(9, 8, 7, 5, 6);
-afh*/
+
 // Define registers per MPU6050, Register Map and Descriptions, Rev 4.2, 08/19/2013 6 DOF Motion sensor fusion device
 // Invensense Inc., www.invensense.com
 // See also MPU-9150 Register Map and Descriptions, Revision 4.0, RM-MPU-9150A-00, 9/12/2012 for registers not listed in 
@@ -185,8 +184,8 @@ afh*/
 #define AK8975A_ADDRESS 0x0C //  Address of magnetometer
 #endif  
 
-#define AHRS  false          // set to false for basic data read
-#define SerialDebug true  // set to true to print serial output for debugging
+#define AHRS  true          // set to false for basic data read
+#define SerialDebug false  // set to true to print serial output for debugging
 
 // Set initial input parameters
 enum Ascale {
@@ -263,7 +262,7 @@ void setup()
   digitalWrite(intPin, LOW);
   pinMode(blinkPin, OUTPUT);
   digitalWrite(blinkPin, HIGH);
-/*afh  
+  
   display.begin(); // Initialize the display
   display.setContrast(55); // Set the contrast
   display.setRotation(0); //  0 or 2) width = width, 1 or 3) width = height, swapped etc.
@@ -283,14 +282,15 @@ void setup()
   display.setTextSize(1); // Set text size to normal, 2 is twice normal etc.
   display.setTextColor(BLACK); // Set pixel color; 1 on the monochrome screen
   display.clearDisplay();   // clears the screen and buffer
-afh/*
+
   // Read the WHO_AM_I register, this is a good test of communication
   uint8_t c = readByte(MPU9150_ADDRESS, WHO_AM_I_MPU9150);  // Read WHO_AM_I register for MPU-9150
-  Serial.print("MPU9150");
-  Serial.print("I AM");
-  Serial.println(c, HEX);  
-  Serial.print("I Should Be");
-  Serial.println(0x68, HEX); 
+  display.setCursor(20,0); display.print("MPU9150");
+  display.setCursor(0,10); display.print("I AM");
+  display.setCursor(0,20); display.print(c, HEX);  
+  display.setCursor(0,30); display.print("I Should Be");
+  display.setCursor(0,40); display.print(0x68, HEX); 
+  display.display();
   delay(1000); 
 
   if (c == 0x68) // WHO_AM_I should always be 0x68
@@ -298,48 +298,36 @@ afh/*
     Serial.println("MPU9150 is online...");
     
   MPU6050SelfTest(SelfTest); // Start by performing self test and reporting values
-  Serial.print("x-axis self test: acceleration trim within : "); 
-  Serial.print(SelfTest[0],1); 
-  Serial.println("% of factory value");
-  Serial.print("y-axis self test: acceleration trim within : "); 
-  Serial.print(SelfTest[1],1); 
-  Serial.println("% of factory value");
-  Serial.print("z-axis self test: acceleration trim within : "); 
-  Serial.print(SelfTest[2],1); 
-  Serial.println("% of factory value");
-  Serial.print("x-axis self test: gyration trim within : "); 
-  Serial.print(SelfTest[3],1); 
-  Serial.println("% of factory value");
-  Serial.print("y-axis self test: gyration trim within : "); 
-  Serial.print(SelfTest[4],1); 
-  Serial.println("% of factory value");
-  Serial.print("z-axis self test: gyration trim within : "); 
-  Serial.print(SelfTest[5],1); 
-  Serial.println("% of factory value");
+//  Serial.print("x-axis self test: acceleration trim within : "); Serial.print(SelfTest[0],1); Serial.println("% of factory value");
+//  Serial.print("y-axis self test: acceleration trim within : "); Serial.print(SelfTest[1],1); Serial.println("% of factory value");
+//  Serial.print("z-axis self test: acceleration trim within : "); Serial.print(SelfTest[2],1); Serial.println("% of factory value");
+//  Serial.print("x-axis self test: gyration trim within : "); Serial.print(SelfTest[3],1); Serial.println("% of factory value");
+//  Serial.print("y-axis self test: gyration trim within : "); Serial.print(SelfTest[4],1); Serial.println("% of factory value");
+//  Serial.print("z-axis self test: gyration trim within : "); Serial.print(SelfTest[5],1); Serial.println("% of factory value");
   if(SelfTest[0] < 1.0f && SelfTest[1] < 1.0f && SelfTest[2] < 1.0f && SelfTest[3] < 1.0f && SelfTest[4] < 1.0f && SelfTest[5] < 1.0f) {
-    Serial.println("Pass Selftest!");  
-    delay(1000);
+  display.clearDisplay();
+  display.setCursor(0, 30); display.print("Pass Selftest!");  
+  display.display();
+  delay(1000);
   }
   
-  calibrateMPU9150(gyroBias, accelBias); // Calibrate gyro and accelerometers, load biases in bias registers       
-  Serial.println("MPU9150 bias");
-  Serial.println(" x   y   z  ");
-  Serial.print("_");
-  Serial.print((int)(1000*accelBias[0])); 
-  Serial.print("_");
-  Serial.print((int)(1000*accelBias[1])); 
-  Serial.print("_");
-  Serial.print((int)(1000*accelBias[2])); 
-  Serial.println("  mg");
+  calibrateMPU9150(gyroBias, accelBias); // Calibrate gyro and accelerometers, load biases in bias registers  
+  display.clearDisplay();
+     
+  display.setCursor(20, 0); display.print("MPU9150 bias");
+  display.setCursor(0, 8); display.print(" x   y   z  ");
 
-  Serial.print("_");
-  Serial.print(gyroBias[0], 1); 
-  Serial.print("_");
-  Serial.print(gyroBias[1], 1); 
-  Serial.print("_");
-  Serial.print(gyroBias[2], 1); 
-  Serial.println("  o/s");   
+  display.setCursor(0,  16); display.print((int)(1000*accelBias[0])); 
+  display.setCursor(24, 16); display.print((int)(1000*accelBias[1])); 
+  display.setCursor(48, 16); display.print((int)(1000*accelBias[2])); 
+  display.setCursor(72, 16); display.print("mg");
+    
+  display.setCursor(0,  24); display.print(gyroBias[0], 1); 
+  display.setCursor(24, 24); display.print(gyroBias[1], 1); 
+  display.setCursor(48, 24); display.print(gyroBias[2], 1); 
+  display.setCursor(66, 24); display.print("o/s");   
  
+  display.display();
   delay(1000); 
     
   initMPU9150(); // Inititalize and configure accelerometer and gyroscope
@@ -347,11 +335,13 @@ afh/*
   
   // Read the WHO_AM_I register of the magnetometer, this is a good test of communication
   uint8_t c = readByte(AK8975A_ADDRESS, WHO_AM_I_AK8975A);  // Read WHO_AM_I register for AK8975A
-  Serial.print("AK8975A");
-  Serial.print("I AM");
-  Serial.println(c, HEX);  
-  Serial.print("I Should Be");
-  Serial.println(0x48, HEX);  
+  display.clearDisplay();
+  display.setCursor(20,0); display.print("AK8975A");
+  display.setCursor(0,10); display.print("I AM");
+  display.setCursor(0,20); display.print(c, HEX);  
+  display.setCursor(0,30); display.print("I Should Be");
+  display.setCursor(0,40); display.print(0x48, HEX);  
+  display.display();
   delay(1000); 
   
   // Get magnetometer calibration from AK8975A ROM
@@ -363,6 +353,12 @@ afh/*
   Serial.print("Z-Axis sensitivity adjustment value "); Serial.println(magCalibration[2], 2); 
   }
  
+  display.clearDisplay();
+  display.setCursor(20,0); display.print("AK8975A");
+  display.setCursor(0,10); display.print("ASAX "); display.setCursor(50,10); display.print(magCalibration[0], 2);
+  display.setCursor(0,20); display.print("ASAY "); display.setCursor(50,20); display.print(magCalibration[1], 2);
+  display.setCursor(0,30); display.print("ASAZ "); display.setCursor(50,30); display.print(magCalibration[2], 2);
+  display.display();
   delay(1000);  
   
   MagRate = 10; // set magnetometer read rate in Hz; 10 to 100 (max) Hz are reasonable values
@@ -461,6 +457,30 @@ void loop()
     Serial.println("");
     }
       
+    display.clearDisplay();
+     
+    display.setCursor(0, 0); display.print("MPU9150/AK8975");
+    display.setCursor(0, 8); display.print(" x   y   z  ");
+
+    display.setCursor(0,  16); display.print((int)(1000*ax)); 
+    display.setCursor(24, 16); display.print((int)(1000*ay)); 
+    display.setCursor(48, 16); display.print((int)(1000*az)); 
+    display.setCursor(72, 16); display.print("mg");
+    
+    display.setCursor(0,  24); display.print((int)(gx)); 
+    display.setCursor(24, 24); display.print((int)(gy)); 
+    display.setCursor(48, 24); display.print((int)(gz)); 
+    display.setCursor(66, 24); display.print("o/s");    
+        
+    display.setCursor(0,  32); display.print((int)(mx)); 
+    display.setCursor(24, 32); display.print((int)(my)); 
+    display.setCursor(48, 32); display.print((int)(mz)); 
+    display.setCursor(72, 32); display.print("mG");   
+   
+    display.setCursor(0,  40); display.print("Gyro T "); 
+    display.setCursor(50, 40); display.print(temperature, 1); display.print(" C");
+    display.display();
+    
     blinkOn = ~blinkOn;
     count = millis();
     }
@@ -503,7 +523,7 @@ void loop()
     roll  = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
     pitch *= 180.0f / PI;
     yaw   *= 180.0f / PI; 
-    yaw   += 14.45; // Declination at Lincoln, MA on 1/28/15
+    yaw   -= 13.8; // Declination at Danville, California is 13 degrees 48 minutes and 47 seconds on 2014-04-04
     roll  *= 180.0f / PI;
 
     if(SerialDebug) {
@@ -516,7 +536,31 @@ void loop()
 
     Serial.print("average rate = "); Serial.print(1.0f/deltat, 2); Serial.println(" Hz");
     }
+    
+    display.clearDisplay();
       
+    display.setCursor(0, 0); display.print(" x   y   z  ");
+
+    display.setCursor(0,  8); display.print((int)(1000*ax)); 
+    display.setCursor(24, 8); display.print((int)(1000*ay)); 
+    display.setCursor(48, 8); display.print((int)(1000*az)); 
+    display.setCursor(72, 8); display.print("mg");
+    
+    display.setCursor(0,  16); display.print((int)(gx)); 
+    display.setCursor(24, 16); display.print((int)(gy)); 
+    display.setCursor(48, 16); display.print((int)(gz)); 
+    display.setCursor(66, 16); display.print("o/s");    
+
+    display.setCursor(0,  24); display.print((int)(mx)); 
+    display.setCursor(24, 24); display.print((int)(my)); 
+    display.setCursor(48, 24); display.print((int)(mz)); 
+    display.setCursor(72, 24); display.print("mG");    
+ 
+    display.setCursor(0,  32); display.print((int)(yaw)); 
+    display.setCursor(24, 32); display.print((int)(pitch)); 
+    display.setCursor(48, 32); display.print((int)(roll)); 
+    display.setCursor(66, 32); display.print("ypr");  
+  
     // With these settings the filter is updating at a ~145 Hz rate using the Madgwick scheme and 
     // >200 Hz using the Mahony scheme even though the display refreshes at only 2 Hz.
     // The filter update rate is determined mostly by the mathematical steps in the respective algorithms, 
@@ -529,10 +573,8 @@ void loop()
     // produced by the on-board Digital Motion Processor of Invensense's MPU6050 6 DoF and MPU9150 9DoF sensors.
     // The 3.3 V 8 MHz Pro Mini is doing pretty well!
     // Display 0.5-second average filter rate
-    
-    Serial.print("rt: "); 
-    Serial.print(1.0f/deltat, 2); 
-    Serial.println(" Hz"); 
+    display.setCursor(0, 40); display.print("rt: "); display.print(1.0f/deltat, 2); display.print(" Hz"); 
+    display.display();
     
     blinkOn = ~blinkOn;
     count = millis();  
